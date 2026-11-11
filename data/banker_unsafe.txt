@@ -1,0 +1,16 @@
+# Banker's algorithm - UNSAFE example (4 processes, 3 resource types)
+# Only P0 can finish; after it returns its resources nobody else fits.
+# n m
+4 3
+# Available
+1 0 0
+# Maximum
+1 1 0
+3 2 0
+1 2 2
+2 0 3
+# Allocation
+0 1 0
+2 0 0
+1 1 1
+0 0 2

@@ -1,0 +1,11 @@
+# Sample job set for CampusCompute (same as the built-in default)
+# Format: id  arrival  burst  priority      (smaller priority number = higher priority)
+#
+# Jobs 2 and 5 share priority 1 -> the tie-breaking rule decides (earlier arrival wins).
+# Job 6 arrives at t=40, after everything else is done -> the CPU is idle from 28 to 40.
+1   0   8   3
+2   1   4   1
+3   2   9   4
+4   3   5   2
+5   4   2   1
+6  40   3   2
