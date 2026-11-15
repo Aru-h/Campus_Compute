@@ -30,6 +30,7 @@ static void print_help(void)
 "                   FR7  resource limits with setrlimit()\n"
 "  verify           FR7  check that no child / thread / IPC object is left over\n"
 "  cleanup [--logs] FR7  remove leftover IPC objects made by this program\n"
+"  menu             interactive menu: type in jobs, pick algorithms, run any feature\n"
 "  demo             run every feature once and print a summary\n"
 "  help             show this message\n"
 "\n"
@@ -81,6 +82,8 @@ int main(int argc, char **argv)
         return cmd_cleanup(argc - 1, argv + 1);
     if (strcmp(cmd, "demo") == 0)
         return cmd_demo(argc - 1, argv + 1);
+    if (strcmp(cmd, "menu") == 0)
+        return cmd_menu(argc - 1, argv + 1);
 
     fprintf(stderr, "error: unknown command '%s'\n", cmd);
     fprintf(stderr, "Run '%s help' to see the list of commands.\n", PROGRAM_NAME);

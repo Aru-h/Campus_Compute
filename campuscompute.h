@@ -51,6 +51,7 @@ struct JobSet {
 const char *status_name(int status);
 void jobs_load_default(struct JobSet *set);
 int  jobs_load_file(struct JobSet *set, const char *path);   /* 0 ok, -1 error */
+int  jobs_add(struct JobSet *set, int id, int arrival, int burst, int priority); /* 0 ok, -1 error */
 void jobs_print(const struct JobSet *set);
 
 /* ---------- FR2: scheduling ---------- */
@@ -83,6 +84,7 @@ struct SchedResult {
 int  run_scheduler(int policy, const struct JobSet *set, int quantum,
                    struct SchedResult *res);
 void print_result(const struct SchedResult *res, int verbose);
+void print_comparison(const struct JobSet *set, int quantum);   /* all three policies side by side */
 int  cmd_sched(int argc, char **argv);
 
 /* ---------- FR3: logger (threads) ---------- */
@@ -104,6 +106,9 @@ int cmd_cleanup(int argc, char **argv);
 
 /* ---------- integrated demo ---------- */
 int cmd_demo(int argc, char **argv);
+
+/* ---------- interactive menu ---------- */
+int cmd_menu(int argc, char **argv);
 
 /* ---------- helpers (util.c) ---------- */
 int  parse_number(const char *text, long min, long max, long *out);

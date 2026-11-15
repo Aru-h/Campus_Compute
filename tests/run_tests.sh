@@ -90,6 +90,25 @@ check_rc "non-number in job file  -> exit 1" 1 $BIN sched fcfs -f /tmp/cc_bad_te
 check "Windows (CRLF) job file is accepted" "Average waiting time    : 2.00"  $BIN sched fcfs -f /tmp/cc_crlf.txt
 rm -f /tmp/cc_bad_big.txt /tmp/cc_bad_text.txt /tmp/cc_crlf.txt
 
+# the interactive menu is tested by feeding it typed answers through a pipe
+echo
+echo "Interactive menu"
+check "Menu: show sample jobs"           "Job set (6 jobs)"                sh -c "printf '4\n0\n' | $BIN menu"
+check "Menu: FCFS on sample jobs"        "Average waiting time    : 9.50"  sh -c "printf '5\n0\n' | $BIN menu"
+check "Menu: Round Robin, quantum 2"     "Round Robin (time quantum = 2)" sh -c "printf '6\n2\n0\n' | $BIN menu"
+check "Menu: comparison"                 "Lowest average waiting time   : Priority" sh -c "printf '8\n\n0\n' | $BIN menu"
+check "Menu: jobs typed by hand"         "Average waiting time    : 2.00"  sh -c "printf '1\n2\n1\n0\n5\n2\n2\n1\n3\n1\n5\n0\n' | $BIN menu"
+check "Menu: duplicate id is refused"    "duplicate job id 1"             sh -c "printf '1\n2\n1\n0\n5\n2\n1\n2\n1\n3\n1\n5\n0\n' | $BIN menu"
+check "Menu: load jobs from file"        "jobs: 6 (file data/jobs.txt)"   sh -c "printf '2\ndata/jobs.txt\n0\n' | $BIN menu"
+check "Menu: missing job file"           "cannot open job file"           sh -c "printf '2\nno_such_file.txt\n0\n' | $BIN menu"
+check "Menu: letters are rejected"       "invalid input"                  sh -c "printf 'abc\n0\n' | $BIN menu"
+check "Menu: out-of-range is rejected"   "invalid input"                  sh -c "printf '99\n0\n' | $BIN menu"
+check "Menu: Banker's safe example"      "Safe sequence: <P1, P3, P0, P2, P4>" sh -c "printf '11\n0\n' | $BIN menu"
+check "Menu: simulated worker failure"   "FAILURE DETECTED"               sh -c "printf '14\nfail\n0\n' | $BIN menu"
+check "Menu: input ends cleanly (EOF)"   "End of input - leaving the menu." sh -c "printf '' | $BIN menu"
+check "Menu: EOF inside a question"      "End of input - leaving the menu." sh -c "printf '1\n3\n' | $BIN menu"
+check_rc "menu with extra argument -> exit 2" 2 $BIN menu extra
+
 echo
 echo "Result: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]

@@ -366,6 +366,50 @@ void print_result(const struct SchedResult *res, int verbose)
 /* command line:  sched fcfs|rr|priority|compare [-f FILE] [-q N] [-v] */
 /* ------------------------------------------------------------------ */
 
+/* Run all three policies on the SAME job set and print them side by side. */
+void print_comparison(const struct JobSet *set, int quantum)
+{
+    struct SchedResult all[3];
+    const char *names[3] = {"FCFS", "Round Robin", "Priority"};
+    int best_wait = 0, best_tat = 0;
+    int i;
+
+    run_scheduler(POLICY_FCFS, set, quantum, &all[0]);
+    run_scheduler(POLICY_RR, set, quantum, &all[1]);
+    run_scheduler(POLICY_PRIORITY, set, quantum, &all[2]);
+
+    print_line('=', 78);
+    printf("Scheduling comparison on the same job set (RR quantum = %d)\n", quantum);
+    print_line('=', 78);
+    printf("  %-12s %9s %11s %9s %10s %9s %11s\n",
+           "Policy", "Avg CT", "Avg TAT", "Avg WT", "Avg RT", "Makespan", "Dispatches");
+    for (i = 0; i < 3; i++) {
+        printf("  %-12s %9.2f %11.2f %9.2f %10.2f %9d %11d\n", names[i],
+               all[i].avg_completion, all[i].avg_turnaround, all[i].avg_waiting,
+               all[i].avg_response, all[i].makespan, all[i].dispatches);
+        if (all[i].avg_waiting < all[best_wait].avg_waiting)
+            best_wait = i;
+        if (all[i].avg_turnaround < all[best_tat].avg_turnaround)
+            best_tat = i;
+    }
+    printf("\n");
+    for (i = 0; i < 3; i++) {
+        int k;
+        printf("  %-12s order: ", names[i]);
+        for (k = 0; k < all[i].nseg; k++) {
+            if (all[i].seg[k].job_id == -1)
+                printf("IDLE ");
+            else
+                printf("J%d ", all[i].seg[k].job_id);
+        }
+        printf("\n");
+    }
+    printf("\nLowest average waiting time   : %s (%.2f)\n", names[best_wait], all[best_wait].avg_waiting);
+    printf("Lowest average turnaround time: %s (%.2f)\n", names[best_tat], all[best_tat].avg_turnaround);
+    printf("Note: Round Robin gives every job a turn quickly (low response time) but\n"
+           "      costs more dispatches; FCFS and Priority run each job in one piece.\n\n");
+}
+
 static void sched_usage(void)
 {
     fprintf(stderr,
@@ -428,45 +472,7 @@ int cmd_sched(int argc, char **argv)
     printf("\n");
 
     if (strcmp(which, "compare") == 0) {
-        /* run all three on the SAME job set and compare */
-        struct SchedResult all[3];
-        const char *names[3] = {"FCFS", "Round Robin", "Priority"};
-        int best_wait = 0, best_tat = 0;
-
-        run_scheduler(POLICY_FCFS, &set, (int)quantum, &all[0]);
-        run_scheduler(POLICY_RR, &set, (int)quantum, &all[1]);
-        run_scheduler(POLICY_PRIORITY, &set, (int)quantum, &all[2]);
-
-        print_line('=', 78);
-        printf("Scheduling comparison on the same job set (RR quantum = %ld)\n", quantum);
-        print_line('=', 78);
-        printf("  %-12s %9s %11s %9s %10s %9s %11s\n",
-               "Policy", "Avg CT", "Avg TAT", "Avg WT", "Avg RT", "Makespan", "Dispatches");
-        for (i = 0; i < 3; i++) {
-            printf("  %-12s %9.2f %11.2f %9.2f %10.2f %9d %11d\n", names[i],
-                   all[i].avg_completion, all[i].avg_turnaround, all[i].avg_waiting,
-                   all[i].avg_response, all[i].makespan, all[i].dispatches);
-            if (all[i].avg_waiting < all[best_wait].avg_waiting)
-                best_wait = i;
-            if (all[i].avg_turnaround < all[best_tat].avg_turnaround)
-                best_tat = i;
-        }
-        printf("\n");
-        for (i = 0; i < 3; i++) {
-            int k;
-            printf("  %-12s order: ", names[i]);
-            for (k = 0; k < all[i].nseg; k++) {
-                if (all[i].seg[k].job_id == -1)
-                    printf("IDLE ");
-                else
-                    printf("J%d ", all[i].seg[k].job_id);
-            }
-            printf("\n");
-        }
-        printf("\nLowest average waiting time   : %s (%.2f)\n", names[best_wait], all[best_wait].avg_waiting);
-        printf("Lowest average turnaround time: %s (%.2f)\n", names[best_tat], all[best_tat].avg_turnaround);
-        printf("Note: Round Robin gives every job a turn quickly (low response time) but\n"
-               "      costs more dispatches; FCFS and Priority run each job in one piece.\n\n");
+        print_comparison(&set, (int)quantum);
         return 0;
     }
 

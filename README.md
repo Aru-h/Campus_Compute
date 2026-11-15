@@ -21,7 +21,7 @@ If you do not want to use `make`, the exact build command is:
 
 ```
 gcc -std=c11 -Wall -Wextra -O2 -D_GNU_SOURCE -o campuscompute main.c util.c jobs.c sched.c \
-    logger.c ipc.c banker.c worker.c limits.c verify.c demo.c -pthread -lrt
+    logger.c ipc.c banker.c worker.c limits.c verify.c demo.c menu.c -pthread -lrt
 ```
 
 ## Run
@@ -29,7 +29,7 @@ gcc -std=c11 -Wall -Wextra -O2 -D_GNU_SOURCE -o campuscompute main.c util.c jobs
 ```
 ./campuscompute help        # list of commands
 ./campuscompute demo        # run every feature once and print a PASS/FAIL summary
-make test                   # 30 automatic checks
+make test                   # automatic checks (should end with 0 failed)
 ```
 
 | Command | Feature | What it shows |
@@ -45,9 +45,22 @@ make test                   # 30 automatic checks
 | `rlimit nofile` / `rlimit mem` / `rlimit cpu` / `rlimit all` | FR7 | `setrlimit()` and the effect it has |
 | `verify` | FR7 | Checks: no child processes, one thread, no leftover IPC objects |
 | `cleanup [--logs]` | FR7 | Removes leftover `cc_shm_*` / `cc_sem_*` objects (and the log with `--logs`) |
+| `menu` | FR8 | Interactive menu: type in jobs or load a file, then run any feature (see below) |
 
 Invalid commands or input print an error plus a usage message and return exit code 2 (bad usage)
 or 1 (bad input data).
+
+## Interactive menu
+
+`./campuscompute menu` shows a numbered menu (0 to 17). You can type in your own jobs (option 1),
+load them from a file (option 2) or use the sample set (option 3), then run FCFS, Round Robin,
+Priority or the comparison on them. The other options run the logger, shared-memory IPC,
+Banker's algorithm, worker processes, resource limits and the cleanup checks.
+
+- Every answer is validated: letters, empty input and out-of-range numbers are rejected and the question is asked again.
+- Pressing Enter accepts the default shown in brackets (for example quantum 3).
+- Ctrl-D (end of input) leaves the menu cleanly.
+- The menu calls the same functions as the sub-commands, so both give identical results.
 
 ## Scheduling rules (FR2)
 
@@ -80,4 +93,4 @@ To check for leftovers at any time: `./campuscompute verify` or `ls /dev/shm`.
 
 - Worker failures are **simulated** (the worker calls `exit(3)` or sends itself `SIGKILL`). They are labelled as simulated in the output and are not real OS faults.
 - `rlimit cpu` takes about 1 second (it burns 1 second of CPU time until the kernel stops it).
-- Files: `main.c` (CLI), `jobs.c`, `sched.c`, `logger.c`, `ipc.c`, `banker.c`, `worker.c`, `limits.c`, `verify.c`, `demo.c`, `util.c`, `campuscompute.h`.
+- Files: `main.c` (CLI), `menu.c` (interactive menu), `jobs.c`, `sched.c`, `logger.c`, `ipc.c`, `banker.c`, `worker.c`, `limits.c`, `verify.c`, `demo.c`, `util.c`, `campuscompute.h`.

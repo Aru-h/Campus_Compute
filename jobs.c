@@ -186,6 +186,39 @@ int jobs_load_file(struct JobSet *set, const char *path)
     return 0;
 }
 
+/*
+ * Add one job to a set (used by the interactive menu).
+ * Checks the values, the maximum number of jobs and that the id is unique.
+ * Returns 0 if the job was added, -1 (with a message) if not.
+ */
+int jobs_add(struct JobSet *set, int id, int arrival, int burst, int priority)
+{
+    struct Job job;
+    char where[40];
+    int i;
+
+    if (set->count >= MAX_JOBS) {
+        fprintf(stderr, "error: too many jobs (maximum is %d)\n", MAX_JOBS);
+        return -1;
+    }
+
+    init_job(&job, id, arrival, burst, priority);
+    snprintf(where, sizeof(where), "job %d", set->count + 1);
+    if (validate_job(&job, where) != 0)
+        return -1;
+
+    for (i = 0; i < set->count; i++) {
+        if (set->jobs[i].id == id) {
+            fprintf(stderr, "error: duplicate job id %d\n", id);
+            return -1;
+        }
+    }
+
+    set->jobs[set->count] = job;
+    set->count++;
+    return 0;
+}
+
 /* Print the job table (input data). */
 void jobs_print(const struct JobSet *set)
 {

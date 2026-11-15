@@ -9,7 +9,7 @@ CC      = gcc
 CFLAGS  = -std=c11 -Wall -Wextra -Wpedantic -O2 -g -D_GNU_SOURCE
 LDLIBS  = -pthread -lrt
 
-SOURCES = main.c util.c jobs.c sched.c logger.c ipc.c banker.c worker.c limits.c verify.c demo.c
+SOURCES = main.c util.c jobs.c sched.c logger.c ipc.c banker.c worker.c limits.c verify.c demo.c menu.c
 OBJECTS = $(SOURCES:.c=.o)
 TARGET  = campuscompute
 
